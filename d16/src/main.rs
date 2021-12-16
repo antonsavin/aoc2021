@@ -1,4 +1,3 @@
-// use std::collections::HashMap;
 use std::env;
 use std::io;
 
@@ -82,28 +81,9 @@ impl Packet {
             2 => self.children.iter().map(|c| c.calc_value()).min().unwrap(),
             3 => self.children.iter().map(|c| c.calc_value()).max().unwrap(),
             4 => self.value.unwrap(),
-            5 => {
-                if self.children.get(0).unwrap().calc_value() > self.children.get(1).unwrap().calc_value() {
-                    1
-                } else {
-                    0
-                }
-            }
-            6 => {
-                if self.children.get(0).unwrap().calc_value() < self.children.get(1).unwrap().calc_value() {
-                    1
-                } else {
-                    0
-                }
-            }
-            7 => {
-                if self.children.get(0).unwrap().calc_value() == self.children.get(1).unwrap().calc_value() {
-                    1
-                } else {
-                    0
-                }
-            }
-
+            5 => (self.children.get(0).unwrap().calc_value() > self.children.get(1).unwrap().calc_value()) as i64,
+            6 => (self.children.get(0).unwrap().calc_value() < self.children.get(1).unwrap().calc_value()) as i64,
+            7 => (self.children.get(0).unwrap().calc_value() == self.children.get(1).unwrap().calc_value()) as i64,
             _ => panic!("Invalid packet type"),
         }
     }
@@ -113,9 +93,7 @@ impl Packet {
         for _ in 0..bit_cnt {
             let bit = *bits_iter.next().unwrap() as i64;
             res = (res << 1) | bit;
-            // print!("bit {}, cur: {}; ", bit, res);
         }
-        // println!();
         self.size += bit_cnt;
         res
     }
