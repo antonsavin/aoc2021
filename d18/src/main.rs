@@ -3,7 +3,6 @@ use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 
-// #[derive(Debug)]
 #[derive(Clone)]
 struct TreeNode {
     value: Option<i32>,
@@ -59,28 +58,18 @@ impl TreeNode {
     }
 
     fn reduce(&mut self) {
-        // println!("    Before reduce: {}", self);
-        let mut changed = true;
-
-        while changed {
-            changed = false;
-
-            loop {
-                let check_explode_res = self.check_explode(0);
-                if !check_explode_res.exploded {
-                    break;
-                }
-                changed = true;
-                // println!("    After explode: {}", self);
+        loop {
+            let check_explode_res = self.check_explode(0);
+            if check_explode_res.exploded {
+                continue;
             }
 
             if self.check_split() {
-                changed = true;
-                // println!("      After split: {}", self);
+                continue;
             }
-        }
 
-        // println!("     After reduce: {}", self);
+            break;
+        }
     }
 
     fn is_number(&self) -> bool {
@@ -106,14 +95,12 @@ impl TreeNode {
                     panic!("Non-number pair on level 5: {}", self);
                 }
 
-                if left.is_number() && right.is_number() {
-                    return CheckExplodeResult {
-                        exploded: true,
-                        just_exploded: true,
-                        to_add_left: Some(left.get_number()),
-                        to_add_right: Some(right.get_number()),
-                    };
-                }
+                return CheckExplodeResult {
+                    exploded: true,
+                    just_exploded: true,
+                    to_add_left: Some(left.get_number()),
+                    to_add_right: Some(right.get_number()),
+                };
             }
 
             let left_result = left.check_explode(level + 1);
@@ -137,9 +124,6 @@ impl TreeNode {
                     self.right = Some(TreeNode::from_number(0));
                 }
 
-                // if let Some(toadd) = right_result.to_add_left {
-                //     println!("Add rightmost {} to {}", toadd, left);
-                // }
                 left.add_rightmost(right_result.to_add_left);
                 return CheckExplodeResult {
                     exploded: true,
@@ -262,26 +246,16 @@ fn add(left: Box<TreeNode>, right: Box<TreeNode>) -> Box<TreeNode> {
 
 fn solve_part_1() {
     let reader = BufReader::new(io::stdin());
-    let mut maybe_prev_root: Option<Box<TreeNode>> = None;
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        let root = TreeNode::new(&line);
+    let trees = reader
+        .lines()
+        .map(|line| TreeNode::new(&line.unwrap()))
+        .collect::<Vec<_>>();
 
-        println!("Tree: {}", root);
-        if let Some(prev_root) = maybe_prev_root {
-            maybe_prev_root = Some(add(prev_root, root));
-            if let Some(rr) = &maybe_prev_root {
-                println!("  Current sum: {}", rr)
-            };
-        } else {
-            maybe_prev_root = Some(root);
-        }
-    }
-
-    if let Some(rr) = maybe_prev_root {
-        println!("Total magnitude: {}", rr.magnitude());
-    }
+    let mut trees_iter = trees.into_iter();
+    let first_tree = trees_iter.next().unwrap();
+    let sum = trees_iter.fold(first_tree, |t1, t2| add(t1, t2));
+    println!("Total magnitude: {}", sum.magnitude());
 }
 
 fn solve_part_2() {
